@@ -17,3 +17,24 @@ export interface FinalIdea {
 }
 
 export type CouncilState = "idle" | "running" | "done";
+
+export type SSEEventType = "agent:start" | "agent:chunk" | "agent:done" | "council:complete" | "error";
+
+export interface SSEPayload {
+  event: SSEEventType;
+  agent?: AgentRole;
+  content?: string;
+}
+
+export interface OllamaRequest {
+  model: string;
+  prompt: string;
+  stream?: boolean;
+}
+
+export interface OllamaStreamChunk {
+  model: string;
+  created_at: string;
+  response: string;
+  done: boolean;
+}

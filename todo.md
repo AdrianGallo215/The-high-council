@@ -165,7 +165,7 @@
 
 - [ ] Hook `useCouncilStream()` que consume el endpoint SSE
 - [ ] Parsea eventos y actualiza el estado de cada `AgentCard` en tiempo real
-- [ ] Manejar `fetch` con `ReadableStream`
+- [x] Manejar `fetch` con `ReadableStream`
 - **Depende de:** T-09, T-11
 - **Tipo:** 🧪 mock (API devuelve datos fake pero el streaming es real)
 - ✅ **Aceptación:**
