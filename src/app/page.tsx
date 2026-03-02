@@ -1,65 +1,148 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import AgentCard from "@/components/AgentCard";
+import InvokeButton from "@/components/InvokeButton";
+import IdeaSpotlight from "@/components/IdeaSpotlight";
+import type { AgentRole, AgentStatus, CouncilState } from "@/lib/types";
+
+// --- MOCK DATA FOR UI TESTING ---
+const MOCK_PROSPECTOR_TEXT = `[SYSTEM LOG] Analyzing current market gaps...
+- Found high demand for developer productivity tools.
+- Trends indicate API aggregators and local-first AI are growing.
+- Identifying "Decision Fatigue" as a major developer pain point.
+[PROPOSAL] A local AI tool that automatically architects projects.`;
+
+const MOCK_ARCHITECT_TEXT = `[SYSTEM LOG] Receiving prospector data...
+[DRAFTING ARCHITECTURE]
+Concept: "The High Council"
+Stack: Next.js + Tailwind + Ollama
+Flow: User clicks button -> 3 Agents debate -> 1 Final Idea.
+Visuals: Dark mode, monitoring dashboard aesthetic.
+[STATUS] Architecture blueprint generated.`;
+
+const MOCK_CURATOR_TEXT = `[SYSTEM LOG] Evaluating blueprint validity...
+- Stack is solid and maintainable.
+- Feasibility: High.
+- Innovation: High.
+[VERDICT] Approved for MVP. Compiling final project manifest...`;
+
+const MOCK_FINAL_IDEA = `
+# Project: The High Council
+
+A local-first artificial intelligence orchestration dashboard designed to eliminate developer decision fatigue by automatically generating validated project ideas and tech stacks.
+
+## The Core Concept
+The system acts as a virtual "boardroom" where three LLM agents debate sequentially to refine a single project idea.
+
+## Tech Stack
+- **Frontend**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS v4 (Dark Mode, Neon Accents)
+- **AI Core**: Ollama (Local)
+
+## MVP Tasks
+1. Setup basic Next.js and Tailwind architecture.
+2. Build responsive mock UI.
+3. Integrate real LLM streams via \`localhost:11434\`.
+`;
 
 export default function Home() {
+  const [councilState, setCouncilState] = useState<CouncilState>("idle");
+  
+  // States for each agent
+  const [prospectorStatus, setProspectorStatus] = useState<AgentStatus>("idle");
+  const [architectStatus, setArchitectStatus] = useState<AgentStatus>("idle");
+  const [curatorStatus, setCuratorStatus] = useState<AgentStatus>("idle");
+  
+  const [prospectorText, setProspectorText] = useState("");
+  const [architectText, setArchitectText] = useState("");
+  const [curatorText, setCuratorText] = useState("");
+  
+  const [finalIdea, setFinalIdea] = useState("");
+
+  const simulateStream = async (
+    text: string, 
+    setStatus: (s: AgentStatus) => void, 
+    setText: (t: string) => void
+  ) => {
+    setStatus("thinking");
+    let currentText = "";
+    setText("");
+    
+    // Simulate token by token streaming
+    const chunks = text.split(" ");
+    for (const chunk of chunks) {
+      currentText += chunk + " ";
+      setText(currentText);
+      await new Promise(r => setTimeout(r, 50)); // 50ms per word
+    }
+    
+    setStatus("done");
+  };
+
+  const handleInvoke = async () => {
+    if (councilState === "running") return;
+    
+    // Reset state
+    setCouncilState("running");
+    setFinalIdea("");
+    setProspectorStatus("idle"); setProspectorText("");
+    setArchitectStatus("idle"); setArchitectText("");
+    setCuratorStatus("idle"); setCuratorText("");
+
+    // Simulate Prospector
+    await simulateStream(MOCK_PROSPECTOR_TEXT, setProspectorStatus, setProspectorText);
+    
+    // Fake network delay
+    await new Promise(r => setTimeout(r, 500));
+    
+    // Simulate Architect
+    await simulateStream(MOCK_ARCHITECT_TEXT, setArchitectStatus, setArchitectText);
+    
+    await new Promise(r => setTimeout(r, 500));
+    
+    // Simulate Curator
+    await simulateStream(MOCK_CURATOR_TEXT, setCuratorStatus, setCuratorText);
+    
+    // Final Result
+    await new Promise(r => setTimeout(r, 800));
+    setFinalIdea(MOCK_FINAL_IDEA);
+    setCouncilState("done");
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      {/* Action Center */}
+      <section className="mb-4">
+        <InvokeButton state={councilState} onClick={handleInvoke} />
+      </section>
+
+      {/* Agents Grid */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <AgentCard 
+          role="prospector" 
+          name="The Prospector" 
+          status={prospectorStatus} 
+          content={prospectorText} 
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        <AgentCard 
+          role="architect" 
+          name="The Architect" 
+          status={architectStatus} 
+          content={architectText} 
+        />
+        <AgentCard 
+          role="curator" 
+          name="The Curator" 
+          status={curatorStatus} 
+          content={curatorText} 
+        />
+      </section>
+
+      {/* Result Section */}
+      {councilState === "done" && finalIdea && (
+        <IdeaSpotlight content={finalIdea} />
+      )}
+    </>
   );
 }
