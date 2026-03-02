@@ -15,7 +15,7 @@
 
 ### T-01 — Inicializar repo Next.js 14+ con App Router y TypeScript
 
-- [ ] `npx create-next-app@latest ./ --typescript --tailwind --app --eslint`
+- [x] `npx create-next-app@latest ./ --typescript --tailwind --app --eslint`
 - **Depende de:** nada
 - **Tipo:** 🔌 real
 - ✅ **Aceptación:**
@@ -45,7 +45,7 @@
 
 ### T-04 — Crear estructura de carpetas del proyecto
 
-- [ ] Crear estructura de directorios:
+- [x] Crear estructura de directorios:
   ```
   app/
     layout.tsx
