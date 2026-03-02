@@ -1,7 +1,20 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { AgentRole, AgentStatus, CouncilState, SSEPayload } from "@/lib/types";
 
+const STORAGE_KEY = "high_council_session";
+
+interface PersistedSession {
+  councilState: CouncilState;
+  finalIdea: string;
+  agents: {
+    prospector: { status: AgentStatus; text: string };
+    architect: { status: AgentStatus; text: string };
+    curator: { status: AgentStatus; text: string };
+  };
+}
+
 export function useCouncilStream() {
+  // Use lazy initialization for state that might come from localStorage
   const [councilState, setCouncilState] = useState<CouncilState>("idle");
   const [finalIdea, setFinalIdea] = useState("");
 
@@ -14,6 +27,51 @@ export function useCouncilStream() {
   const [curatorStatus, setCuratorStatus] = useState<AgentStatus>("idle");
   const [curatorText, setCuratorText] = useState("");
 
+  // Load from LocalStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as PersistedSession;
+        setCouncilState(parsed.councilState);
+        setFinalIdea(parsed.finalIdea);
+        setProspectorStatus(parsed.agents.prospector.status);
+        setProspectorText(parsed.agents.prospector.text);
+        setArchitectStatus(parsed.agents.architect.status);
+        setArchitectText(parsed.agents.architect.text);
+        setCuratorStatus(parsed.agents.curator.status);
+        setCuratorText(parsed.agents.curator.text);
+      }
+    } catch (err) {
+      console.warn("Failed to restore session from localStorage", err);
+    }
+  }, []);
+
+  // Save to LocalStorage whenever finalIdea completes
+  useEffect(() => {
+    if (councilState === "done") {
+      const session: PersistedSession = {
+        councilState,
+        finalIdea,
+        agents: {
+          prospector: { status: prospectorStatus, text: prospectorText },
+          architect: { status: architectStatus, text: architectText },
+          curator: { status: curatorStatus, text: curatorText },
+        }
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+    }
+  }, [councilState, finalIdea, prospectorStatus, prospectorText, architectStatus, architectText, curatorStatus, curatorText]);
+
+  const clearSession = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    setCouncilState("idle");
+    setFinalIdea("");
+    setProspectorStatus("idle"); setProspectorText("");
+    setArchitectStatus("idle"); setArchitectText("");
+    setCuratorStatus("idle"); setCuratorText("");
+  }, []);
+
   const getSettersForAgent = (role: AgentRole) => {
     switch(role) {
       case "prospector": return { setStatus: setProspectorStatus, setText: setProspectorText };
@@ -22,7 +80,7 @@ export function useCouncilStream() {
     }
   };
 
-  const invoke = useCallback(async (topic?: string) => {
+  const invoke = useCallback(async (topic?: string, config?: any) => {
     if (councilState === "running") return;
 
     // Reset everything
@@ -36,7 +94,7 @@ export function useCouncilStream() {
       const response = await fetch("/api/council/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({ topic, config }),
       });
 
       if (!response.ok || !response.body) {
@@ -56,7 +114,7 @@ export function useCouncilStream() {
           buffer += decoder.decode(value, { stream: true });
           
           let eolIndex;
-          while ((eolIndex = buffer.indexOf("\\n\\n")) >= 0) {
+          while ((eolIndex = buffer.indexOf("\n\n")) >= 0) {
             const chunk = buffer.slice(0, eolIndex).trim();
             buffer = buffer.slice(eolIndex + 2);
             
@@ -105,5 +163,6 @@ export function useCouncilStream() {
       curator: { status: curatorStatus, text: curatorText },
     },
     invoke,
+    clearSession,
   };
 }

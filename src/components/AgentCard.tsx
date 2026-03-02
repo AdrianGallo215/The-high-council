@@ -34,7 +34,7 @@ export default function AgentCard({ role, name, status, content }: AgentCardProp
   }, [content]);
 
   return (
-    <div className={`flex flex-col h-[500px] sm:h-[600px] rounded-lg border backdrop-blur-sm overflow-hidden transition-colors duration-500 ${statusColors[status]}`}>
+    <div className={`flex flex-col h-[500px] sm:h-[600px] rounded-lg border backdrop-blur-sm overflow-hidden transition-all duration-500 ${statusColors[status]} ${status === "thinking" ? "opacity-100 scale-[1.02] shadow-lg shadow-neon-primary/20" : status === "done" ? "opacity-75" : "opacity-50 grayscale-[30%]"}`}>
       {/* Header */}
       <div className="flex items-center gap-3 p-4 border-b border-inherit bg-background/50">
         <div className="p-2 rounded bg-background border border-inherit">
