@@ -6,15 +6,17 @@ interface ModelOption {
 }
 
 export interface ModelConfig {
-  prospector: string;
-  architect: string;
-  curator: string;
+  interpreter: string;
+  investigador: string;
+  creativo: string;
+  curador: string;
 }
 
 export const DEFAULT_MODELS: ModelConfig = {
-  prospector: "llama3:latest",
-  architect: "qwen2.5-coder:7b",
-  curator: "gemma3:latest"
+  interpreter: "llama3:latest",
+  investigador: "llama3:latest",
+  creativo: "llama3:latest",
+  curador: "llama3:latest"
 };
 
 const CONFIG_STORAGE_KEY = "high_council_models";
@@ -90,7 +92,7 @@ export default function SettingsModal() {
                 endpoint: http://localhost:11434
               </p>
 
-              {(['prospector', 'architect', 'curator'] as const).map(role => (
+              {(['interpreter', 'investigador', 'creativo', 'curador'] as const).map(role => (
                 <div key={role} className="flex flex-col gap-1.5">
                   <label className="text-xs text-zinc-400 font-medium capitalize pl-0.5">
                     {role} Agent

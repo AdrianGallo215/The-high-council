@@ -106,24 +106,24 @@ export default function ConsolePage() {
       {/* ─── TRIPTYCH: Agent Panels ─── */}
       <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-px bg-zinc-900/30 overflow-hidden relative">
         <AgentCard
-          role="prospector"
-          name="Prospector"
-          status={agents.prospector.status}
-          content={agents.prospector.text}
+          role="investigador"
+          name="Investigador"
+          status={agents.investigador.status}
+          content={agents.investigador.text}
           accentColor="emerald"
         />
         <AgentCard
-          role="architect"
-          name="Architect"
-          status={agents.architect.status}
-          content={agents.architect.text}
+          role="creativo"
+          name="Creativo"
+          status={agents.creativo.status}
+          content={agents.creativo.text}
           accentColor="violet"
         />
         <AgentCard
-          role="curator"
-          name="Curator"
-          status={agents.curator.status}
-          content={agents.curator.text}
+          role="curador"
+          name="Curador"
+          status={agents.curador.status}
+          content={agents.curador.text}
           accentColor="amber"
         />
 

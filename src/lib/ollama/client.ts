@@ -7,20 +7,22 @@ interface GenerateParams {
   system: string;
   prompt: string;
   onChunk: (text: string) => void;
+  options?: { temperature?: number; [key: string]: any };
 }
 
 export class OllamaClient {
   /**
    * Generates a streaming response from the local Ollama instance.
    */
-  static async generateStream({ model, system, prompt, onChunk }: GenerateParams): Promise<string> {
+  static async generateStream({ model, system, prompt, onChunk, options }: GenerateParams): Promise<string> {
     const requestBody = {
       model,
       system,
       prompt,
       stream: true,
       options: {
-        temperature: 0.7, // Sane default
+        temperature: options?.temperature ?? 0.7,
+        ...options,
       }
     };
 
