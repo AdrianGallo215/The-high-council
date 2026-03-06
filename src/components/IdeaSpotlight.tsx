@@ -1,60 +1,104 @@
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { Check, Copy, Sparkles } from "lucide-react";
+"use client";
+
 import { useState } from "react";
+import { Check, Copy, RotateCcw, FileText, MessageSquare, X } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface IdeaSpotlightProps {
   content: string;
+  onClose?: () => void;
+  onReset?: () => void;
 }
 
-export default function IdeaSpotlight({ content }: IdeaSpotlightProps) {
+export default function IdeaSpotlight({ content, onClose, onReset }: IdeaSpotlightProps) {
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<"verdict" | "transcript">("verdict");
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(content);
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (!content) return null;
-
   return (
-    <section className="mt-12 rounded-xl border border-neon-accent/30 bg-background/50 backdrop-blur-sm overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
-      <div className="flex items-center justify-between p-4 border-b border-neon-accent/20 bg-neon-accent/5">
-        <div className="flex items-center gap-2 text-neon-accent">
-          <Sparkles className="w-5 h-5" />
-          <h2 className="font-mono font-bold tracking-widest text-sm">FINAL_PROPOSAL.MD</h2>
+    <div className="flex flex-col flex-1 overflow-hidden">
+      {/* Tab bar */}
+      <div className="flex items-center justify-between px-6 border-b border-zinc-800 shrink-0">
+        <div className="flex items-center gap-0">
+          <button
+            onClick={() => setActiveTab("verdict")}
+            className={`flex items-center gap-2 px-4 py-3 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
+              activeTab === "verdict"
+                ? "border-blue-500 text-blue-400"
+                : "border-transparent text-zinc-600 hover:text-zinc-400"
+            }`}
+          >
+            <div className={`w-1.5 h-1.5 rounded-full ${activeTab === "verdict" ? "bg-emerald-500" : "bg-zinc-700"}`} />
+            The Final Verdict
+          </button>
+          <button
+            onClick={() => setActiveTab("transcript")}
+            className={`flex items-center gap-2 px-4 py-3 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
+              activeTab === "transcript"
+                ? "border-blue-500 text-blue-400"
+                : "border-transparent text-zinc-600 hover:text-zinc-400"
+            }`}
+          >
+            <FileText className="w-3 h-3" />
+            Full Transcript
+          </button>
         </div>
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-background border border-foreground/10 hover:bg-foreground/5 hover:border-foreground/20 transition-all font-mono text-xs"
-        >
-          {copied ? (
-            <>
-              <Check className="w-3.5 h-3.5 text-green-500" />
-              <span className="text-green-500">COPIED</span>
-            </>
-          ) : (
-            <>
-              <Copy className="w-3.5 h-3.5" />
-              <span>COPY TO CLIPBOARD</span>
-            </>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          {onReset && (
+            <button
+              onClick={onReset}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-zinc-500 hover:text-zinc-300 border border-zinc-800 hover:border-zinc-700 rounded-lg transition-colors cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Refine Query
+            </button>
           )}
-        </button>
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-zinc-500 hover:text-zinc-300 border border-zinc-800 hover:border-zinc-700 rounded-lg transition-colors cursor-pointer"
+          >
+            {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+            {copied ? "Copied" : "Copy to Clipboard"}
+          </button>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1.5 text-zinc-600 hover:text-zinc-300 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
-      
-      <div className="p-6 sm:p-8 font-sans prose prose-invert max-w-none 
-          prose-headings:font-mono prose-headings:text-foreground
-          prose-h1:text-2xl prose-h1:border-b prose-h1:border-foreground/10 prose-h1:pb-2
-          prose-h2:text-xl prose-h2:text-neon-primary
-          prose-h3:text-lg prose-h3:text-neon-accent
-          prose-a:text-neon-primary prose-a:no-underline hover:prose-a:underline
-          prose-code:text-neon-secondary prose-code:bg-foreground/5 prose-code:px-1 prose-code:rounded
-          prose-pre:bg-[#0a0a0f] prose-pre:border prose-pre:border-foreground/10">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {content}
-        </ReactMarkdown>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-8 py-8">
+        {activeTab === "verdict" ? (
+          <article className="prose prose-invert prose-sm max-w-3xl mx-auto
+            prose-headings:font-semibold prose-headings:text-zinc-100 prose-headings:tracking-tight
+            prose-p:text-zinc-400 prose-p:leading-relaxed
+            prose-strong:text-zinc-200
+            prose-li:text-zinc-400
+            prose-code:text-blue-300 prose-code:bg-zinc-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
+            prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-800 prose-pre:rounded-lg
+            prose-blockquote:border-blue-500/30 prose-blockquote:text-zinc-500
+            prose-hr:border-zinc-800
+          ">
+            <ReactMarkdown>{content}</ReactMarkdown>
+          </article>
+        ) : (
+          <div className="font-mono text-xs text-zinc-500 leading-relaxed max-w-3xl mx-auto whitespace-pre-wrap">
+            {content}
+          </div>
+        )}
       </div>
-    </section>
+    </div>
   );
 }

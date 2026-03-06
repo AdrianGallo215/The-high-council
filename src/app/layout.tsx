@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import DashboardLayout from "@/components/DashboardLayout";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -14,8 +13,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The High Council",
-  description: "Local AI Orchestration Node",
+  title: "The High Council — Multi-Agent Intelligence",
+  description: "Orchestrate local AI agents to debate, analyze, and synthesize solutions for your hardest problems.",
 };
 
 export default function RootLayout({
@@ -28,9 +27,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <DashboardLayout>
-          {children}
-        </DashboardLayout>
+        {children}
       </body>
     </html>
   );

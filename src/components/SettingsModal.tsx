@@ -63,46 +63,46 @@ export default function SettingsModal() {
 
   return (
     <>
-      <button 
+      <button
         onClick={() => setIsOpen(true)}
-        className="fixed top-4 right-4 p-2 rounded-full border border-foreground/10 bg-background/50 backdrop-blur-sm hover:bg-foreground/5 hover:border-neon-primary transition-all text-foreground/70 hover:text-neon-primary z-50"
+        className="p-1.5 rounded-md text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition-colors cursor-pointer"
       >
-        <Settings className="w-5 h-5" />
+        <Settings className="w-4 h-4" />
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-background border border-foreground/10 rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl shadow-black/50 overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-foreground/10 bg-foreground/5">
-              <div className="flex items-center gap-2">
-                <Server className="w-5 h-5 text-neon-primary" />
-                <h2 className="font-mono font-bold tracking-widest text-sm">COUNCIL_NODE_CFG</h2>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
+              <div className="flex items-center gap-2.5">
+                <Server className="w-4 h-4 text-blue-400" />
+                <h2 className="text-sm font-semibold text-zinc-200">Model Configuration</h2>
               </div>
-              <button onClick={() => setIsOpen(false)} className="p-1 hover:text-red-400 transition-colors">
-                <X className="w-5 h-5" />
+              <button onClick={() => setIsOpen(false)} className="p-1 text-zinc-600 hover:text-zinc-300 transition-colors cursor-pointer">
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Body */}
-            <div className="p-6 flex flex-col gap-6">
-              <p className="text-sm opacity-70">
-                Configure the LLM models backing each agent. Requires Ollama running locally.
+            <div className="p-5 flex flex-col gap-4">
+              <p className="text-[11px] text-zinc-600 font-mono">
+                endpoint: http://localhost:11434
               </p>
 
               {(['prospector', 'architect', 'curator'] as const).map(role => (
-                <div key={role} className="flex flex-col gap-2">
-                  <label className="text-xs font-mono uppercase tracking-wider opacity-80 pl-1">
-                    {role} Model
+                <div key={role} className="flex flex-col gap-1.5">
+                  <label className="text-xs text-zinc-400 font-medium capitalize pl-0.5">
+                    {role} Agent
                   </label>
                   <select
                     value={config[role]}
                     onChange={(e) => handleChange(role, e.target.value)}
                     disabled={isLoading}
-                    className="w-full bg-background border border-foreground/20 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-neon-primary font-mono appearance-none"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 appearance-none transition-colors cursor-pointer"
                   >
                     {!availableModels.some(m => m.name === config[role]) && (
-                       <option value={config[role]}>{config[role]} (Missing?)</option>
+                       <option value={config[role]}>{config[role]} (Missing)</option>
                     )}
                     {availableModels.map(model => (
                       <option key={model.name} value={model.name}>
@@ -115,12 +115,12 @@ export default function SettingsModal() {
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-foreground/10 bg-foreground/5 flex justify-end">
-              <button 
+            <div className="px-5 py-4 border-t border-zinc-800 flex justify-end">
+              <button
                 onClick={() => setIsOpen(false)}
-                className="px-4 py-2 bg-foreground text-background font-bold text-sm rounded-md hover:opacity-90 transition-opacity"
+                className="px-4 py-2 bg-zinc-100 text-zinc-950 font-medium text-xs rounded-lg hover:bg-white transition-colors cursor-pointer"
               >
-                APPLY & CLOSE
+                Save & Close
               </button>
             </div>
           </div>
