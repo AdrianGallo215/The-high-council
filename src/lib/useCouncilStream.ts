@@ -3,29 +3,35 @@ import type { AgentRole, AgentStatus, CouncilState, SSEPayload } from "@/lib/typ
 
 const STORAGE_KEY = "high_council_session";
 
+interface AgentData {
+  status: AgentStatus;
+  text: string;
+}
+
 interface PersistedSession {
   councilState: CouncilState;
   finalIdea: string;
-  agents: {
-    prospector: { status: AgentStatus; text: string };
-    architect: { status: AgentStatus; text: string };
-    curator: { status: AgentStatus; text: string };
-  };
+  agents: Record<"interpreter" | "investigador" | "creativo" | "curador", AgentData>;
 }
 
+const defaultAgentData = (): AgentData => ({ status: "idle", text: "" });
+
 export function useCouncilStream() {
-  // Use lazy initialization for state that might come from localStorage
   const [councilState, setCouncilState] = useState<CouncilState>("idle");
   const [finalIdea, setFinalIdea] = useState("");
 
-  const [prospectorStatus, setProspectorStatus] = useState<AgentStatus>("idle");
-  const [prospectorText, setProspectorText] = useState("");
+  // 4 agents
+  const [interpreterStatus, setInterpreterStatus] = useState<AgentStatus>("idle");
+  const [interpreterText, setInterpreterText] = useState("");
 
-  const [architectStatus, setArchitectStatus] = useState<AgentStatus>("idle");
-  const [architectText, setArchitectText] = useState("");
+  const [investigadorStatus, setInvestigadorStatus] = useState<AgentStatus>("idle");
+  const [investigadorText, setInvestigadorText] = useState("");
 
-  const [curatorStatus, setCuratorStatus] = useState<AgentStatus>("idle");
-  const [curatorText, setCuratorText] = useState("");
+  const [creativoStatus, setCreativoStatus] = useState<AgentStatus>("idle");
+  const [creativoText, setCreativoText] = useState("");
+
+  const [curadorStatus, setCuradorStatus] = useState<AgentStatus>("idle");
+  const [curadorText, setCuradorText] = useState("");
 
   // Load from LocalStorage on mount
   useEffect(() => {
@@ -35,48 +41,53 @@ export function useCouncilStream() {
         const parsed = JSON.parse(saved) as PersistedSession;
         setCouncilState(parsed.councilState);
         setFinalIdea(parsed.finalIdea);
-        setProspectorStatus(parsed.agents.prospector.status);
-        setProspectorText(parsed.agents.prospector.text);
-        setArchitectStatus(parsed.agents.architect.status);
-        setArchitectText(parsed.agents.architect.text);
-        setCuratorStatus(parsed.agents.curator.status);
-        setCuratorText(parsed.agents.curator.text);
+        setInterpreterStatus(parsed.agents.interpreter.status);
+        setInterpreterText(parsed.agents.interpreter.text);
+        setInvestigadorStatus(parsed.agents.investigador.status);
+        setInvestigadorText(parsed.agents.investigador.text);
+        setCreativoStatus(parsed.agents.creativo.status);
+        setCreativoText(parsed.agents.creativo.text);
+        setCuradorStatus(parsed.agents.curador.status);
+        setCuradorText(parsed.agents.curador.text);
       }
     } catch (err) {
       console.warn("Failed to restore session from localStorage", err);
     }
   }, []);
 
-  // Save to LocalStorage whenever finalIdea completes
+  // Save to LocalStorage when done
   useEffect(() => {
     if (councilState === "done") {
       const session: PersistedSession = {
         councilState,
         finalIdea,
         agents: {
-          prospector: { status: prospectorStatus, text: prospectorText },
-          architect: { status: architectStatus, text: architectText },
-          curator: { status: curatorStatus, text: curatorText },
+          interpreter: { status: interpreterStatus, text: interpreterText },
+          investigador: { status: investigadorStatus, text: investigadorText },
+          creativo: { status: creativoStatus, text: creativoText },
+          curador: { status: curadorStatus, text: curadorText },
         }
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
     }
-  }, [councilState, finalIdea, prospectorStatus, prospectorText, architectStatus, architectText, curatorStatus, curatorText]);
+  }, [councilState, finalIdea, interpreterStatus, interpreterText, investigadorStatus, investigadorText, creativoStatus, creativoText, curadorStatus, curadorText]);
 
   const clearSession = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setCouncilState("idle");
     setFinalIdea("");
-    setProspectorStatus("idle"); setProspectorText("");
-    setArchitectStatus("idle"); setArchitectText("");
-    setCuratorStatus("idle"); setCuratorText("");
+    setInterpreterStatus("idle"); setInterpreterText("");
+    setInvestigadorStatus("idle"); setInvestigadorText("");
+    setCreativoStatus("idle"); setCreativoText("");
+    setCuradorStatus("idle"); setCuradorText("");
   }, []);
 
   const getSettersForAgent = (role: AgentRole) => {
     switch(role) {
-      case "prospector": return { setStatus: setProspectorStatus, setText: setProspectorText };
-      case "architect": return { setStatus: setArchitectStatus, setText: setArchitectText };
-      case "curator": return { setStatus: setCuratorStatus, setText: setCuratorText };
+      case "interpreter": return { setStatus: setInterpreterStatus, setText: setInterpreterText };
+      case "investigador": return { setStatus: setInvestigadorStatus, setText: setInvestigadorText };
+      case "creativo": return { setStatus: setCreativoStatus, setText: setCreativoText };
+      case "curador": return { setStatus: setCuradorStatus, setText: setCuradorText };
     }
   };
 
@@ -86,9 +97,10 @@ export function useCouncilStream() {
     // Reset everything
     setCouncilState("running");
     setFinalIdea("");
-    setProspectorStatus("idle"); setProspectorText("");
-    setArchitectStatus("idle"); setArchitectText("");
-    setCuratorStatus("idle"); setCuratorText("");
+    setInterpreterStatus("idle"); setInterpreterText("");
+    setInvestigadorStatus("idle"); setInvestigadorText("");
+    setCreativoStatus("idle"); setCreativoText("");
+    setCuradorStatus("idle"); setCuradorText("");
 
     try {
       const response = await fetch("/api/council/start", {
@@ -104,7 +116,7 @@ export function useCouncilStream() {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
-      let buffer = ""; // Required for chunks that arrive incomplete across network boundaries
+      let buffer = "";
 
       while (!done) {
         const { value, done: readerDone } = await reader.read();
@@ -127,6 +139,7 @@ export function useCouncilStream() {
                   getSettersForAgent(payload.agent).setStatus("thinking");
                 } 
                 else if (payload.event === "agent:chunk" && payload.agent && payload.content !== undefined) {
+                  getSettersForAgent(payload.agent).setStatus("streaming");
                   getSettersForAgent(payload.agent).setText(prev => prev + payload.content);
                 } 
                 else if (payload.event === "agent:done" && payload.agent) {
@@ -158,9 +171,10 @@ export function useCouncilStream() {
     councilState,
     finalIdea,
     agents: {
-      prospector: { status: prospectorStatus, text: prospectorText },
-      architect: { status: architectStatus, text: architectText },
-      curator: { status: curatorStatus, text: curatorText },
+      interpreter: { status: interpreterStatus, text: interpreterText },
+      investigador: { status: investigadorStatus, text: investigadorText },
+      creativo: { status: creativoStatus, text: creativoText },
+      curador: { status: curadorStatus, text: curadorText },
     },
     invoke,
     clearSession,

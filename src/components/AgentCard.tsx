@@ -1,41 +1,52 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { Lightbulb, Cpu, Layers } from "lucide-react";
+import { Search, Sparkles, Scale } from "lucide-react";
+import type { AgentRole, AgentStatus } from "@/lib/types";
 
 interface AgentCardProps {
-  role: "prospector" | "architect" | "curator";
+  role: AgentRole;
   name: string;
-  status: string;
+  status: AgentStatus;
   content: string;
   accentColor?: "emerald" | "violet" | "amber";
 }
 
 const agentConfig = {
-  prospector: {
-    icon: Lightbulb,
-    title: "Prospector",
-    subtitle: "Data Ingestion & Research",
+  interpreter: {
+    icon: Search,
+    title: "Interpreter",
+    subtitle: "Query Processing",
+    gradient: "from-zinc-500/5 to-transparent",
+    border: "border-zinc-500/20",
+    dotColor: "bg-zinc-500",
+    textColor: "text-zinc-400",
+    glowColor: "bg-zinc-500/10",
+  },
+  investigador: {
+    icon: Search,
+    title: "Investigador",
+    subtitle: "Internet Research & Discovery",
     gradient: "from-emerald-500/5 to-transparent",
     border: "border-emerald-500/20",
     dotColor: "bg-emerald-500",
     textColor: "text-emerald-400",
     glowColor: "bg-emerald-500/10",
   },
-  architect: {
-    icon: Cpu,
-    title: "Architect",
-    subtitle: "System Modeling & Framework",
+  creativo: {
+    icon: Sparkles,
+    title: "Creativo",
+    subtitle: "Original Ideas & Invention",
     gradient: "from-violet-500/5 to-transparent",
     border: "border-violet-500/20",
     dotColor: "bg-violet-500",
     textColor: "text-violet-400",
     glowColor: "bg-violet-500/10",
   },
-  curator: {
-    icon: Layers,
-    title: "Curator",
-    subtitle: "Final Review & Synthesis",
+  curador: {
+    icon: Scale,
+    title: "Curador",
+    subtitle: "Evaluation & Final Ranking",
     gradient: "from-amber-500/5 to-transparent",
     border: "border-amber-500/20",
     dotColor: "bg-amber-500",
@@ -44,12 +55,18 @@ const agentConfig = {
   },
 };
 
-function statusLabel(status: string) {
-  switch (status) {
-    case "streaming": return "Searching...";
-    case "done": return "Complete";
-    default: return "Standby";
+function statusLabel(status: string, role: AgentRole) {
+  if (status === "thinking") return "Thinking...";
+  if (status === "done") return "Complete";
+  if (status === "streaming") {
+    switch (role) {
+      case "investigador": return "Searching...";
+      case "creativo": return "Imagining...";
+      case "curador": return "Evaluating...";
+      default: return "Processing...";
+    }
   }
+  return "Standby";
 }
 
 export default function AgentCard({ role, name, status, content }: AgentCardProps) {
@@ -95,7 +112,7 @@ export default function AgentCard({ role, name, status, content }: AgentCardProp
             isDone ? "text-zinc-500" :
             "text-zinc-700"
           }`}>
-            {statusLabel(status)}
+            {statusLabel(status, role)}
           </span>
         </div>
       </div>
@@ -123,9 +140,9 @@ export default function AgentCard({ role, name, status, content }: AgentCardProp
             <div className="text-center">
               <p className="text-sm font-medium text-zinc-500">{config.title}</p>
               <p className="text-xs text-zinc-700 mt-1">
-                {role === "prospector" ? "Ready to search and analyze data." :
-                 role === "architect" ? "Ready to build framework upon Prospector's data." :
-                 "Awaiting Architect's blueprint for final polish."}
+                {role === "investigador" ? "Ready to search communities for cool projects." :
+                 role === "creativo" ? "Ready to invent original ideas from scratch." :
+                 "Awaiting proposals to evaluate and rank."}
               </p>
             </div>
           </div>
